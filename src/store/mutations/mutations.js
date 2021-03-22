@@ -15,9 +15,6 @@ export default {
     SHOW_DATA(state) {
         state.isShowData = true;
     },
-    REMOVE_COIN(state, item) {
-        state.coins = state.coins.filter(i => i !== item);
-    },
     UPDATE_COINS(state, _value) {
         const value = Object.values(_value).filter(item => typeof item === 'object');
         value.forEach((item, idx) => {

@@ -34,10 +34,11 @@ export default {
   },
   methods: {
     getClassName(num) {
-      const className = 'progress-step__bar-intermediate';
-      if (num < this.step) return `${className}--prev`;
-      else if (num === this.step) return `${className}--current`;
-      else return `${className}--next`
+      return {
+        'progress-step__bar-intermediate--prev': num < this.step,
+        'progress-step__bar-intermediate--current': num === this.step,
+        'progress-step__bar-intermediate--next': num > this.step,
+      }
     }
   }
 }

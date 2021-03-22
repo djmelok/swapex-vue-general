@@ -126,7 +126,7 @@ form.card-form(@submit.prevent="sumbitSaveCard", method="post")
             autocomplete="off",
             required
           )
-    button.card-form__button.primary-button(type="sumbit") Сохранить
+    button.card-form__button(type="sumbit") Сохранить
 </template>
 
 <script>
@@ -307,6 +307,15 @@ export default {
   }
 
   &__button {
+    width: 100%;
+    padding: 16px 0;
+    background-color: #f8880f;
+    border: none;
+    border-radius: 6px;
+    font-size: 22px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #fff;
     margin-top: 10px;
   }
 }

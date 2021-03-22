@@ -13,12 +13,12 @@
         :ratePercent="item.ratePercent"
       )
     template(v-slot:left="{ item }")
-      .swipeout-action(@click="receiveCoin(item)")
+      a.swipeout-action(:href="`/cointReceive/${item.name}`")
         img.swipeout-action__img(src="../assets/images/icons/arrow_line_down_left_light.png")
-      .swipeout-action(@click="transferCoin(item)")
+      a.swipeout-action(:href="`/cointSend/${item.name}`")
         img.swipeout-action__img(src="../assets/images/icons/arrow_line_up_right_light.png")
     template(v-slot:right="{ item }")
-      .swipeout-action(@click="removecoint(item)")
+      .swipeout-action(@click="REMOVE_COIN(item)")
         i.fas.fa-minus
 </template>
 
@@ -39,45 +39,19 @@ export default {
     ...mapGetters(['GET_COINS']),
   },
   methods: {
-    ...mapActions(['API_GET_COINS']),
-
-    removecoint(e) {
-      console.log(e)
-    },receiveCoin(e) {
-      this.$http.get(`/cointReceive/${e.name}`).then(response => {
-        console.log('receive response', response);
-      }, error => {
-        console.error(error)
-      });
-    },
-    transferCoin(e) {
-      this.$http.get(`/cointSend/${e.name}`).then(response => {
-        console.log('transfer response', response);
-      }, error => {
-        console.error(error)
-      });
-    },
+    ...mapMutations(['REMOVE_COIN']),
+    ...mapActions(['API_GET_DATA']),
     clickItem(e) {
-      console.log(e, 'click coin');
+      window.location.href = `/coint/${e.name}`;
     }
   },
   created() {
-    this.API_GET_COINS();
+    this.API_GET_DATA();
   }
 };
 </script>
 
 <style lang="scss">
-[v-cloak] {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 99999999;
-  background: red;
-}
-
 .swipeout {
   $self: &;
 

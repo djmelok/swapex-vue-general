@@ -39,7 +39,7 @@ export default {
       this.$emit('input', option)
     },
     getOptionIcon(option) {
-      return require(`../assets/images/crypto/svg/white/${option.toLowerCase()}.svg`)
+      return `/img/crypto/svg/white/${option.toLowerCase()}.svg`
     },
     getFilterOptions() {
       return this.options.filter(item => item !== this.selected)

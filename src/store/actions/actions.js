@@ -19,10 +19,11 @@ export default {
     async TOGGLE_DATA({ commit, state }) {
         await commit(state.isShowData ? 'HIDE_DATA' : 'SHOW_DATA');
     },
-    async API_GET_COINS({ commit }) {
-        await Vue.http.post('/api/user', { withCredentials: true })
+    async API_GET_DATA({ commit }) {
+        await Vue.http.post('http://swapex.me/api/testuser', { withCredentials: true })
             .then(response => {
                 commit('UPDATE_COINS', response.data);
+                console.log(response.data);
             }, error => {
                 console.error(error)
             });

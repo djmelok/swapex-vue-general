@@ -1,58 +1,125 @@
 <template lang="pug">
 .buy
-  HeadPage(title="Купить")
-  form.buy__content
-    .buy__content-operation
-      .buy__content-operation-title
-        img.buy__content-operation-title-img(src="../assets/images/icons/arrow_line_up_right_light.png")
-        span.buy__content-operation-title-text Отдать
-      input.buy__content-operation-input(v-model.number="inputTransfer", inputmode="decimal", type="number", value="", placeholder="0.00")
-      BaseSelect.buy__content-operation-select(:options="selectTransfer", @input="selectHandler")
-    .buy__content-payment
-      button.buy__content-payment-choice(type="button")
+  ProgressStep(title="Купить", :step="2")
+  form.buy__form
+    .buy__form-operation
+      .buy__form-operation-title
+        img.buy__form-operation-title-img(src="../assets/images/icons/arrow_line_up_right_light.png")
+        span.buy__form-operation-title-text Отдать
+      input.buy__form-operation-input(v-model.number="inputTransfer", inputmode="decimal", type="number", value="", placeholder="0.00")
+      BaseSelect.buy__form-operation-select(:options="selectTransfer", @input="selectHandler")
+    .buy__form-payment
+      button.buy__form-payment-choice(type="button")
         img(src="../assets/images/icons/visa-master-dark.png")
-      .buy__content-payment-line
-      button.buy__content-payment-lock(type="button")
+      .buy__form-payment-line
+      button.buy__form-payment-lock(type="button")
         i.fas.fa-lock
-    .buy__content-operation
-      .buy__content-operation-title
-        img.buy__content-operation-title-img(src="../assets/images/icons/arrow_line_down_left_light.png")
-        span.buy__content-operation-title-text Получить
-      input.buy__content-operation-input(v-model.number="inputReceive", inputmode="decimal", type="number", value="", placeholder="0.00")
-      BaseSelect.buy__content-operation-select(:options="selectReceive", @input="selectHandler")
-    .buy__content-balance
-      span.buy__content-balance-text Баланс:
-      span.buy__content-balance-value 0 BTC
-    .buy__content-range
-      button.buy__content-range-button(type="button") Min
-      button.buy__content-range-button(type="button") 50%
-      button.buy__content-range-button(type="button") Min
+    .buy__form-operation
+      .buy__form-operation-title
+        img.buy__form-operation-title-img(src="../assets/images/icons/arrow_line_down_left_light.png")
+        span.buy__form-operation-title-text Получить
+      input.buy__form-operation-input(v-model.number="inputReceive", inputmode="decimal", type="number", value="", placeholder="0.00")
+      BaseSelect.buy__form-operation-select(:options="selectReceive", @input="selectHandler")
+    input(:value="cardActive", name="card", type="hidden", readonly)
+    //- .buy__form-balance
+    //-   span.buy__form-balance-text Баланс:
+    //-   span.buy__form-balance-value 0 BTC
+    //- .buy__form-range
+    //-   button.buy__form-range-button(type="button") Min
+    //-   button.buy__form-range-button(type="button") 50%
+    //-   button.buy__form-range-button(type="button") Max
     BaseSubmit(title="Далее")
+  .buy__slider
+    .buy__slider-inner(:style="{ '--X': this.slideActive * -1 }")
+      .buy__card(v-for="card in saveCards", v-touch:swipe="swipeHandler")
+        .buy__card-number 
+          span.buy__card-number-text {{ card.number }}
+        .buy__card-name 
+          span.buy__card-name-text {{ card.name }}
+        img.buy__card-type(:src="require(`../assets/images/credit-form/types/${getCardType(card)}.png`)", v-if="getCardType(card)", alt="type")
+      form.buy__bind(v-touch:swipe="swipeHandler")
+        input.buy__bind-input(type="text", placeholder="Наименование карты")
+        button.buy__bind-button(type="sumbit")
+          i.fas.fa-plus.buy__bind-button-icon
+          span.buy__bind-button-text Добавить карту
+    .buy__slider-pagination(v-if="slideCount >= 2")
+      button.buy__slider-pagination-dot(v-for="(_, idx) in slideCount", @click="clickPagination(idx)", :class="getClassActive(idx)", type="button")
 </template>
 
 <script>
-import HeadPage from '../components/HeadPage.vue';
+import ProgressStep from '../components/ProgressStep.vue';
 import BaseSelect from '../components/BaseSelect.vue';
 import BaseSubmit from '../components/BaseSubmit.vue';
 
 export default {
   components: {
-    HeadPage,
+    ProgressStep,
     BaseSelect,
     BaseSubmit
   },
   data() {
     return {
-      selectTransfer: ['EUR', 'USD', 'RUB'],
+      selectTransfer: ['EUR', 'USD', 'UAH'],
       selectReceive: ['BTC', 'ETH', 'LTC'],
       inputTransfer: null,
-      inputReceive: null
+      inputReceive: null,
+      saveCards: [
+        { number: '4441 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+      ],
+      slideActive: 0,
     };
+  },
+  computed: {
+    slideCount() {
+      return this.saveCards.length + 1;
+    },
+    cardActive() {
+      if (this.slideActive >= this.saveCards.length) return null;
+      return this.saveCards[this.slideActive].number;
+    },
   },
   methods: {
     selectHandler(e) {
       console.log('Select: ', e);
     },
+    swipeHandler(e) {
+      if (e === 'left') {
+        if (this.slideActive >= this.slideCount - 1) return;
+        this.slideActive = this.slideActive + 1;
+      } else if (e === 'right') {
+        if (this.slideActive <= 0) return;
+        this.slideActive = this.slideActive - 1;
+      }
+    },
+    getClassActive(idx) {
+      return { 'buy__slider-pagination-dot--active': idx === this.slideActive }
+    },
+    getCardType(card) {
+      console.log(card);
+      let re = /^4/;
+      if (card.number.match(re) != null) return 'visa';
+
+      re = /^(34|37)/;
+      if (card.number.match(re) != null) return 'amex';
+
+      re = /^5[1-5]/;
+      if (card.number.match(re) != null) return 'mastercard';
+
+      re = /^6011/;
+      if (card.number.match(re) != null) return 'discover';
+
+      re = /^9792'/;
+      if (card.number.match(re) != null) return 'troy';
+
+      re = /^2/;
+      if (card.number.match(re) != null) return 'mir';
+
+      return 'none';
+    },
+    clickPagination(idx) {
+      this.slideActive = idx;
+    }
   },
 };
 </script>
@@ -61,13 +128,14 @@ export default {
 @import "~/src/assets/styles/settings.scss";
 
 .buy {
+  display: flex;
+  flex-direction: column;
   padding: 12px;
+  margin-top: 140px;
+  margin-bottom: 72px;
 
-  &__content {
-    display: flex;
-    flex-direction: column;
-    margin-top: 88px;
-    margin-bottom: 48px;
+  &__form {
+    margin-bottom: 32px;
 
     &-operation {
       display: grid;
@@ -168,6 +236,124 @@ export default {
         border-radius: 12px;
         font-size: 18px;
         font-weight: bold;
+      }
+    }
+  }
+
+  &__slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+
+    &-inner {
+      width: 100%;
+      display: flex;
+      transform: translateX(calc(var(--X) * 100%));
+      transition: transform 0.3s ease;
+    }
+
+    &-pagination {
+      display: flex;
+      padding: 16px 0;
+
+      &-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid #dadada;
+        transition: transform 0.3s ease;
+
+        & + & {
+          margin-left: 18px;
+        }
+
+        &--active {
+          transform: scale(1.5);
+          background-color: #dadada;
+        }
+      }
+    }
+  }
+
+  &__card,
+  &__bind {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    background-color: #141414;
+    border: 2px solid #636363;
+    border-radius: 12px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  &__card {
+    color: #dadada;
+    padding: 24px 0;
+    position: relative;
+
+    &-number {
+      width: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    &-name {
+      width: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-weight: bold;
+      border-left: 2px solid #636363;
+      padding: 0 12px;
+    }
+
+    &-type {
+      height: 32px;
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      z-index: 0;
+      opacity: 0.75;
+    }
+  }
+
+  &__bind {
+    justify-content: center;
+    flex-direction: column;
+    padding: 24px;
+
+    &-input {
+      background-color: transparent;
+      border: none;
+      outline: none;
+      padding: 12px;
+      border-bottom: 2px solid #636363;
+      color: #dadada;
+      text-align: center;
+    }
+
+    &-button {
+      width: 100%;
+      padding: 12px;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+
+      &-icon {
+        color: #dadada;
+        font-size: 12px;
+      }
+
+      &-text {
+        margin-left: 8px;
+        text-transform: uppercase;
+        font-weight: bold;
+        color: #dadada;
       }
     }
   }

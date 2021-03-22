@@ -1,6 +1,6 @@
 <template lang="pug">
 .provider
-  ProgressStep(title="Выберите провайдера", :step="2")
+  ProgressStep(title="Выберите провайдера", :step="3")
   form.provider__content
     CardProvider.provider__content-card(logo="kuna.png", best)
     CardProvider.provider__content-card(logo="kuna.png")

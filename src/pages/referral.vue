@@ -3,10 +3,9 @@
   HeadPage(title="Приглашай друзей")
   .referral__title Заработай вместе с Swapex Wallet до 30% от комиссии!
   vue-qrcode.referral__qr(:value="`https://www.swapex.me/user/registration?ref=${qr}`", :options="{ width: 200 }")
-  .referral__id
+  button.referral__id(@click="clickCopy", type="button")
     span.referral__id-value {{ qr }}
-    button.referral__id-copy(@click="clickCopy", type="button")
-      i.far.fa-copy.referral__id-copy-icon
+    i.far.fa-copy.referral__id-icon
   .referral__buttons
     button.referral__button(type="button")
       i.fas.fa-share-alt.referral__button-icon
@@ -82,14 +81,10 @@ export default {
       font-size: 20px;
     }
 
-    &-copy {
-      width: 32px;
-      height: 32px;
-
-      &-icon {
-        color: #ff6800;
-        font-size: 20px;
-      }
+    &-icon {
+      color: #ff6800;
+      font-size: 20px;
+      margin-left: 12px;
     }
   }
 
@@ -151,27 +146,6 @@ export default {
       &:active,
       &:focus {
         background-color: #fff;
-      }
-    }
-
-    &-button {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 6px;
-      margin-top: 12px;
-      padding: 12px;
-      background-color: #ff6800;
-      color: #fff;
-
-      i {
-        margin-left: -14px;
-      }
-
-      span {
-        text-transform: uppercase;
-        font-weight: 500;
-        margin-left: 8px;
       }
     }
   }
