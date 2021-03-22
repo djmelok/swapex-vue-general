@@ -1,11 +1,11 @@
 <template lang="pug">
 .coin.content
-  HeadPage(title="Bitcoin")
+  HeadPage(title="Swapex")
   .coin__info
     .coin__info-head
-      img.coin__info-head-icon(src="../assets/images/crypto/png/btc.png")
+      img.coin__info-head-icon(src="/img/crypto/png/swx.png")
       .coin__info-head-text
-        span.coin__info-head-text-name Bitcoin
+        span.coin__info-head-text-name Swapex
         .coin__info-head-text-field
           span.coin__info-head-text-field-code {{ shortCode }}
           button.coin__info-head-text-field-button(type="button", @click="clickCopy")
@@ -23,10 +23,13 @@
     a.coin__links-link(href="/")
       img.coin__links-link-icon(src="../assets/images/icons/arrow_line_up_right_light.png")
       span.coin__links-link-text Отправить
+  ul.class
+    li.class(v-for="act in getCoin.acts")
+      span {{ act.recipient }}
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import HeadPage from '../components/HeadPage.vue';
 
 export default {
@@ -40,12 +43,17 @@ export default {
   },
   computed: {
     ...mapGetters(['GET_COINS']),
+    getCoin() {
+      console.log(this.GET_COINS.filter(coin => coin.name === 'SWX')[0]);
+      return this.GET_COINS.filter(coin => coin.name === 'SWX')[0];
+    },
     shortCode() {
       const length = this.code.length;
       return `${this.code.slice(0, 6)}.....${this.code.slice(length - 6, length)}`;
     }
   },
   methods: {
+    ...mapActions(['API_GET_DATA']),
     clickCopy() {
       const input = document.createElement('input');
       input.setAttribute('value', this.code);
@@ -59,6 +67,9 @@ export default {
         position: 'bottom'
       });
     },
+  },
+  created() {
+    this.API_GET_DATA();
   }
 };
 </script>

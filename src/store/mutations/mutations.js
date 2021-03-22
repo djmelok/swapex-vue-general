@@ -27,7 +27,10 @@ export default {
                 fullAmount: 0,
                 rate: 121.0,
                 ratePercent: 23.0,
-                active: item.active
+                active: item.active,
+                acts: item.acts,
+                key: item.key,
+                multykeys: item.multykeys,
             });
             //     {
             //         id: 0,

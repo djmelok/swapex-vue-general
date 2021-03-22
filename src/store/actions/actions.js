@@ -20,7 +20,7 @@ export default {
         await commit(state.isShowData ? 'HIDE_DATA' : 'SHOW_DATA');
     },
     async API_GET_DATA({ commit }) {
-        await Vue.http.post('http://swapex.me/api/testuser', { withCredentials: true })
+        await Vue.http.post('https://swapex.me/api/testuser', { withCredentials: true })
             .then(response => {
                 commit('UPDATE_COINS', response.data);
                 console.log(response.data);
