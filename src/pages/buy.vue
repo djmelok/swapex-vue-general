@@ -1,12 +1,19 @@
 <template lang="pug">
 .buy
   ProgressStep(title="Купить", :step="2")
-  form.buy__form
+  form.buy__form(action="/pay/create", method="post", v-if="saveCards.length")
     .buy__form-operation
       .buy__form-operation-title
         img.buy__form-operation-title-img(src="../assets/images/icons/arrow_line_up_right_light.png")
         span.buy__form-operation-title-text Отдать
-      input.buy__form-operation-input(v-model.number="inputTransfer", inputmode="decimal", type="number", value="", placeholder="0.00")
+      input.buy__form-operation-input(
+        v-model.cardNumber="inputTransfer",
+        name='summOut',
+        inputmode="decimal",
+        type="number",
+        value="",
+        placeholder="0.00"
+      )
       BaseSelect.buy__form-operation-select(:options="selectTransfer", @input="selectHandler")
     .buy__form-payment
       button.buy__form-payment-choice(type="button")
@@ -18,7 +25,14 @@
       .buy__form-operation-title
         img.buy__form-operation-title-img(src="../assets/images/icons/arrow_line_down_left_light.png")
         span.buy__form-operation-title-text Получить
-      input.buy__form-operation-input(v-model.number="inputReceive", inputmode="decimal", type="number", value="", placeholder="0.00")
+      input.buy__form-operation-input(
+        v-model.cardNumber="inputReceive",
+        name="summIn",
+        inputmode="decimal",
+        type="number",
+        value="",
+        placeholder="0.00"
+      )
       BaseSelect.buy__form-operation-select(:options="selectReceive", @input="selectHandler")
     input(:value="cardActive", name="card", type="hidden", readonly)
     //- .buy__form-balance
@@ -32,13 +46,13 @@
   .buy__slider
     .buy__slider-inner(:style="{ '--X': this.slideActive * -1 }")
       .buy__card(v-for="card in saveCards", v-touch:swipe="swipeHandler")
-        .buy__card-number 
-          span.buy__card-number-text {{ card.number }}
-        .buy__card-name 
-          span.buy__card-name-text {{ card.name }}
+        .buy__card-number
+          span.buy__card-number-text {{ card.cardNumber }}
+        .buy__card-name
+          span.buy__card-name-text {{ card.cardName }}
         img.buy__card-type(:src="require(`../assets/images/credit-form/types/${getCardType(card)}.png`)", v-if="getCardType(card)", alt="type")
-      form.buy__bind(v-touch:swipe="swipeHandler")
-        input.buy__bind-input(type="text", placeholder="Наименование карты")
+      form.buy__bind(action="/addCard/create", method="post")(v-touch:swipe="swipeHandler")
+        input.buy__bind-input(type="text", placeholder="Наименование карты", name="cardName")
         button.buy__bind-button(type="sumbit")
           i.fas.fa-plus.buy__bind-button-icon
           span.buy__bind-button-text Добавить карту
@@ -50,6 +64,7 @@
 import ProgressStep from '../components/ProgressStep.vue';
 import BaseSelect from '../components/BaseSelect.vue';
 import BaseSubmit from '../components/BaseSubmit.vue';
+import Vue from "vue";
 
 export default {
   components: {
@@ -64,19 +79,22 @@ export default {
       inputTransfer: null,
       inputReceive: null,
       saveCards: [
-        { number: '4441 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
-        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { cardNumber: '4441 **** 9634', cardName: 'Александр Петров' },
+        { cardNumber: '5566 **** 9634', cardName: 'Александр Петров' },
       ],
       slideActive: 0,
+      curse: 0
     };
+  },
+  beforeCreate() {
+    Vue.http.post('/pay', { withCredentials: true })
+      .then(response => {
+        this.saveCards = response.data.saveCards;
+        this.curse = response.data.curse;
+        console.log(response.data)
+      }, error => {
+        console.error(error)
+      });
   },
   computed: {
     slideCount() {
@@ -84,7 +102,7 @@ export default {
     },
     cardActive() {
       if (this.slideActive >= this.saveCards.length) return null;
-      return this.saveCards[this.slideActive].number;
+      return this.saveCards[this.slideActive].cardNumber;
     },
   },
   methods: {
@@ -105,22 +123,22 @@ export default {
     },
     getCardType(card) {
       let re = /^4/;
-      if (card.number.match(re) != null) return 'visa';
+      if (card.cardNumber.match(re) != null) return 'visa';
 
       re = /^(34|37)/;
-      if (card.number.match(re) != null) return 'amex';
+      if (card.cardNumber.match(re) != null) return 'amex';
 
       re = /^5[1-5]/;
-      if (card.number.match(re) != null) return 'mastercard';
+      if (card.cardNumber.match(re) != null) return 'mastercard';
 
       re = /^6011/;
-      if (card.number.match(re) != null) return 'discover';
+      if (card.cardNumber.match(re) != null) return 'discover';
 
       re = /^9792'/;
-      if (card.number.match(re) != null) return 'troy';
+      if (card.cardNumber.match(re) != null) return 'troy';
 
       re = /^2/;
-      if (card.number.match(re) != null) return 'mir';
+      if (card.cardNumber.match(re) != null) return 'mir';
 
       return 'none';
     },
@@ -261,12 +279,8 @@ export default {
     }
 
     &-pagination {
-      width: 100%;
       display: flex;
-      justify-content: center;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 16px;
+      padding: 16px 0;
 
       &-dot {
         width: 12px;
@@ -274,7 +288,6 @@ export default {
         border-radius: 50%;
         border: 1px solid #dadada;
         transition: transform 0.3s ease;
-        flex-shrink: 0;
 
         & + & {
           margin-left: 18px;

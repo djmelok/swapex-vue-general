@@ -18,11 +18,11 @@ export default {
     REMOVE_COIN(state, item) {
         state.coins = state.coins.filter(i => i !== item);
     },
-    UPDATE_COINS(state, _value) {
-        const value = Object.values(_value).filter(item => typeof item === 'object');
-        value.forEach((item, idx) => {
+    UPDATE_STATE(state, value) {
+        state.course = Number(value.rate);
+        const coins = Object.values(value).filter(item => typeof item === 'object');
+        coins.forEach((item, idx) => {
             if (!item.active) return;
-
             Vue.set(state.coins, idx, {
                 id: idx,
                 logo: item.ico,
@@ -34,16 +34,6 @@ export default {
                 ratePercent: 23.0,
                 active: item.active
             });
-            //     {
-            //         id: 0,
-            //         logo: 'swx.png',
-            //         name: 'SWX',
-            //         amount: 0,
-            //         fullName: 'Swapex',
-            //         fullAmount: 0,
-            //         rate: 124.0,
-            //         ratePercent: 14.2
-            //     },
         });
     }
 }

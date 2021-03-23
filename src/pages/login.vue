@@ -1,14 +1,11 @@
 <template lang="pug">
 .login
   img.login__logo(src="@/assets/images/logo.png")
-  .login__checkbox
-    input#checkbox.login__checkbox-input(v-model="checkbox", type="checkbox", name="checkbox")
-    label.login__checkbox-label(for="checkbox")
-      span.login__checkbox-label-text
-        | Я прочитал и согласен с&nbsp;
-        a(href="/erms") условиями пользованиями&nbsp;
-        | и&nbsp;
-        a(href="/policy") политикой конфиденциальности
+  BaseCheckbox(@change="changeCheckbox")
+    | Я прочитал и согласен с&nbsp;
+    a(href="/erms") условиями пользованиями&nbsp;
+    | и&nbsp;
+    a(href="/policy") политикой конфиденциальности
   .login__buttons
     a.login__button.login__button--signin(:class="getClassName", href="/user/singnin")
       i.fas.fa-sign-in-alt
@@ -24,11 +21,13 @@
 </template>
 
 <script>
+import BaseCheckbox from '../components/BaseCheckbox.vue'
 import ButtonTelegram from '../components/ButtonTelegram.vue'
 
 export default {
   components: {
-    ButtonTelegram
+    BaseCheckbox,
+    ButtonTelegram,
   },
   data() {
     return {
@@ -49,6 +48,10 @@ export default {
     this.resizeHandler();
   },
   methods: {
+    changeCheckbox(e) {
+      console.log('changeCheckbox', e);
+      this.checkbox = e;
+    },
     resizeHandler() {
       if (window.innerHeight === this.oldHeight) return;
       const vh = window.innerHeight * 0.01;
@@ -73,57 +76,6 @@ export default {
   &__logo {
     width: 212px;
     height: auto;
-  }
-
-  &__checkbox {
-    display: flex;
-    align-items: center;
-
-    &-input {
-      position: absolute;
-      z-index: -1;
-      opacity: 0;
-
-      &:checked {
-        & + .login__checkbox-label::before {
-          border-color: #ff6800;
-          background-color: #ff6800;
-          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23fff' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
-        }
-      }
-    }
-
-    &-label {
-      margin: 24px 0;
-      display: inline-flex;
-      align-items: center;
-      user-select: none;
-      cursor: pointer;
-
-      &::before {
-        content: "";
-        display: inline-block;
-        width: 24px;
-        height: 24px;
-        flex-shrink: 0;
-        flex-grow: 0;
-        border: 1px solid #adb5bd;
-        border-radius: 6px;
-        margin-right: 12px;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: 50% 50%;
-      }
-
-      &-text {
-        color: #fff;
-
-        a {
-          font-weight: 500;
-          color: #ff6800;
-        }
-      }
-    }
   }
 
   &__buttons {

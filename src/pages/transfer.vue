@@ -2,16 +2,18 @@
 .transfer
   HeadPage(title="Перевод")
   .transfer__title
-    img.transfer__title-icon(src="/img/crypto/png/btc.png")
-    .transfer__title-name Bitcoin
-    .transfer__title-balance 0 BTC
+    img.transfer__title-icon(:src="`/img/crypto/png/${getCoin.logo}`")
+    .transfer__title-name {{ getCoin.fullName }}
+    .transfer__title-balance {{ (getCoin.amount / 100).toFixed(2) }} {{ getCoin.name }}
   form.transfer__form
     .transfer__form-course
       .transfer__form-course-currency
-        span 0.00 USD
-        span 0.00 UAH
-      .transfer__form-course-crypto
-        | {{ (inputRange / 1000).toFixed(2) }} BTC
+        span {{ getUSD }}
+          i USD
+        span {{ getUAH }}
+          i UAH
+      .transfer__form-course-crypto {{ (inputRange / 100).toFixed(2) }}
+        i {{ getCoin.name }}
     .transfer__form-range
       .transfer__form-range-dash.transfer__form-range-dash--left 
         span.transfer__form-range-dash-text min
@@ -19,38 +21,40 @@
         span.transfer__form-range-dash-text 50%
       .transfer__form-range-dash.transfer__form-range-dash--right 
         span.transfer__form-range-dash-text max
-      input.transfer__form-range-input(v-model="inputRange", type="range", step="0.01", min="0", :max="maxValue", value="25000")
+      input.transfer__form-range-input(v-model="inputRange", type="range", step="0.01", min="0", :max="getCoin.amount")
     .transfer__form-often
-      button.transfer__form-often-button(v-for="item in oftenUsed", :class="getDisabledClass(item)", @click="clickOftenButton(item)", type="button") {{ (item / 1000).toFixed(2) }}
+      button.transfer__form-often-button(v-for="item in oftenUsed", :class="getDisabledClass(item)", @click="clickOftenButton(item)", type="button") {{ (item / 100).toFixed(2) }}
     .transfer__form-address
       input.transfer__form-address-input(type="text", placeholder="Адрес получателя", ref="address")
       button.transfer__form-address-button(type="button", @click="clickPaste")
         i.fas.fa-paste.transfer__form-address-button-icon
+    BaseCheckbox(name="incognita") Отправить инкогнито
     BaseSubmit(title="Далее")
 </template>
 
 <script>
 import HeadPage from '../components/HeadPage.vue';
+import BaseCheckbox from '../components/BaseCheckbox.vue';
 import BaseSubmit from '../components/BaseSubmit.vue';
-import { mapActions } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   components: {
     HeadPage,
+    BaseCheckbox,
     BaseSubmit,
   },
   data() {
     return {
       oftenUsed: [5000, 10000, 20000, 50000, 100000, 300000, 500000, 1000000],
-      maxValue: 100000,
-      inputRange: 25000
+      inputRange: 0,
     };
   },
   methods: {
     ...mapActions(['API_GET_DATA']),
     getDisabledClass(item) {
       return {
-        'transfer__form-often-button--disabled': item > this.maxValue,
+        'transfer__form-often-button--disabled': item > this.getCoin.amount,
       }
     },
     clickOftenButton(item) {
@@ -64,13 +68,28 @@ export default {
       });
     },
   },
+  computed: {
+    ...mapGetters(['GET_COINS', 'GET_COURSE']),
+    getCoin() {
+      console.log(this.GET_COINS.filter(coin => coin.name === 'SWX')[0]);
+      return this.GET_COINS.filter(coin => coin.name === 'SWX')[0];
+    },
+    getUSD() {
+      return ((this.inputRange * 1) / 100).toFixed(2);
+    },
+    getUAH() {
+      return ((this.inputRange * this.GET_COURSE) / 100).toFixed(2);
+    },
+  },
   watch: {
     inputRange(val) {
       return Number(val).toFixed(2);
     }
   },
   created() {
-    this.API_GET_DATA();
+    this.API_GET_DATA().then(() => {
+      this.inputRange = this.getCoin.amount / 2;
+    });
   }
 };
 </script>
@@ -127,11 +146,16 @@ export default {
           width: 50%;
           display: inline-flex;
           justify-content: center;
-          align-items: center;
+          align-items: baseline;
           font-size: 26px;
 
           &:first-child {
             border-right: 2px solid #404040;
+          }
+
+          i {
+            margin-left: 4px;
+            font-size: 16px;
           }
         }
       }
@@ -139,8 +163,13 @@ export default {
       &-crypto {
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: baseline;
         font-size: 26px;
+
+        i {
+          margin-left: 4px;
+          font-size: 16px;
+        }
       }
     }
 
@@ -286,6 +315,12 @@ export default {
           font-size: 18px;
           color: #dadada;
         }
+      }
+    }
+
+    .base-checkbox {
+      &__label-text {
+        color: #dadada;
       }
     }
   }
