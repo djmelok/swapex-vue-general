@@ -1,11 +1,11 @@
 <template lang="pug">
 .signin
   img.signin__logo(src="@/assets/images/logo.png")
-  form.signin__form(@submit="checkForm" action="/user/singnin" method="post")
+  form.signin__form(@submit="checkForm", action="/user/singnin", method="post")
     .signin__form-title
       span Авторизация
-    input.signin__form-input(v-model="email",name="login", type="email", placeholder="E-mail", required)
-    input.signin__form-input(v-model="password",name="password", type="password", placeholder="Пароль", required)
+    input.signin__form-input(v-model="email", name="login", type="email", placeholder="E-mail", required)
+    input.signin__form-input(v-model="password", name="password", type="password", placeholder="Пароль", required)
     .g-recaptcha(data-sitekey="6LcqfoEaAAAAALUD5kGTMqfI6qgce1s-JqfuZH9a")
     button.signin__form-button(type="submit")
       i.fas.fa-sign-in-alt
@@ -24,17 +24,17 @@ export default {
   },
   created() {
     Vue.http.post('/api/errors', { withCredentials: true })
-        .then(response => {
-          if(response.body.length > 0){
-            this.$toast.error(response.body[0], {
-              queue: true,
-              duration: 2500,
-              position: 'top'
-            });
-          }
-        }, error => {
-          console.error(error)
-        });
+      .then(response => {
+        if (response.body.length > 0) {
+          this.$toast.error(response.body[0], {
+            queue: true,
+            duration: 2500,
+            position: 'top'
+          });
+        }
+      }, error => {
+        console.error(error)
+      });
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeHandler);
@@ -120,7 +120,7 @@ export default {
       border-radius: 6px;
       margin-top: 12px;
       padding: 12px;
-      background-color: #ff6800;
+      background-color: 6800;
       color: #fff;
 
       i {

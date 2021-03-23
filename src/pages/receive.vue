@@ -9,28 +9,32 @@
     button.receive__switch-button(type="button", @click="switchPage = false", :class="{ 'receive__switch-button--active': !this.switchPage }") Обычный
     button.receive__switch-button(type="button", @click="switchPage = true", :class="{ 'receive__switch-button--active': this.switchPage }") Одноразовый
     .receive__switch-line
-  .receive__content(v-if="!switchPage")
-    vue-qrcode.receive__content-qr(:value="`https://www.swapex.me/?code=${normalKey}`", :options="{ width: 200 }")
-    button.receive__content-field(@click="clickCopy", type="button")
-      span.receive__content-field-code {{ normalKey }}
-      i.far.fa-copy.receive__content-field-icon
-  .receive__content(v-if="switchPage")
-    template(v-if="timeKey")
-      vue-qrcode.receive__content-qr(:value="`https://www.swapex.me/?code=${timeKey}`", :options="{ width: 200 }")
-      button.receive__content-field(@click="clickCopy", type="button")
-        span.receive__content-field-code {{ timeKey }}
-        i.far.fa-copy.receive__content-field-icon
-    form.receive__content-form
-      input.receive__content-form-input(name="name", type="text", placeholder="Имя ключа")
-      input.receive__content-form-input(name="amount", type="text", placeholder="Сумма")
-      button.receive__content-form-button(type="submit") Создать ключ
-        i.receive__content-form-button-icon.fas.fa-plus
+  .receive__slider(v-if="!switchPage")
+    vue-qrcode.receive__slider-qr(:value="`https://www.swapex.me/?code=${normalKey}`", :options="{ width: 200 }")
+    button.receive__slider-field(@click="clickCopy(normalKey)", type="button")
+      span.receive__slider-field-code {{ normalKey }}
+      i.far.fa-copy.receive__slider-field-icon
+  .receive__slider(v-if="switchPage")
+    .receive__slider-inner
+      .receive__slider-slide(v-if="getCoin", v-for="obj in getCoin.multykeys")
+        vue-qrcode.receive__slider-qr(:value="`https://www.swapex.me/?code=${obj.key}`", :options="{ width: 200 }")
+        .receive__slider-info
+          span.receive__slider-info-text {{ obj.keyname }}
+          span.receive__slider-info-text {{ obj.summ }}
+        button.receive__slider-field(@click="clickCopy(obj.key)", type="button")
+          span.receive__slider-field-code {{ obj.key }}
+          i.far.fa-copy.receive__slider-field-icon
+    form.receive__slider-form
+      input.receive__slider-form-input(name="name", type="text", placeholder="Имя ключа")
+      input.receive__slider-form-input(name="amount", type="text", placeholder="Сумма")
+      button.receive__slider-form-button(type="submit") Создать ключ
+        i.receive__slider-form-button-icon.fas.fa-plus
 </template>
 
 <script>
 import HeadPage from '../components/HeadPage.vue';
 import VueQrcode from '@chenfengyuan/vue-qrcode';
-import { mapActions } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   components: {
@@ -41,14 +45,13 @@ export default {
     return {
       switchPage: false,
       normalKey: 'O7K5lgl0wXU4U7Wf89r3r48fBM6fIhpnEgoakcbfBy6kQ8evqJGxUbGBsXa5MQ2uiSbKSi0bs9N0ba1FJMA3dJJVKtF817v',
-      timeKey: 'qJGxUbGBsXa5MQ2uiSbKSi0bs9N0ba1FJMA3dJJVKtF817v',
     };
   },
   methods: {
     ...mapActions(['API_GET_DATA']),
-    clickCopy() {
+    clickCopy(key) {
       const input = document.createElement('input');
-      input.setAttribute('value', this.normalKey);
+      input.setAttribute('value', key);
       document.body.appendChild(input);
       input.select();
       document.execCommand("copy");
@@ -58,6 +61,13 @@ export default {
         duration: 2000,
         position: 'bottom'
       });
+    },
+  },
+  computed: {
+    ...mapGetters(['GET_COINS']),
+    getCoin() {
+      console.log(this.GET_COINS.filter(coin => coin.name === 'SWX')[0]);
+      return this.GET_COINS.filter(coin => coin.name === 'SWX')[0];
     },
   },
   created() {
@@ -131,20 +141,55 @@ export default {
     }
   }
 
-  &__content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  &__slider {
+    width: 100%;
+    overflow: hidden;
     padding: 16px;
 
+    &-inner {
+      display: flex;
+    }
+
+    &-slide {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
     &-qr {
-      margin-bottom: 16px;
+      margin-bottom: 8px;
+    }
+
+    &-info {
+      width: 100%;
+      display: flex;
+
+      &-text {
+        width: 50%;
+        font-weight: 500;
+        text-align: right;
+        color: #ff6800;
+        padding: 0 16px;
+
+        & + & {
+          border-left: 2px solid #ff6800;
+          text-align: left;
+
+          &::after {
+            content: "\20B4";
+            margin-left: 4px;
+          }
+        }
+      }
     }
 
     &-field {
       display: flex;
       align-items: center;
       margin-bottom: 16px;
+      margin-top: 8px;
 
       &-code {
         overflow-wrap: anywhere;

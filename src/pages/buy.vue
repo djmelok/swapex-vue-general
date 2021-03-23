@@ -66,6 +66,14 @@ export default {
       saveCards: [
         { number: '4441 **** 9634', name: 'Александр Петров' },
         { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
+        { number: '5566 **** 9634', name: 'Александр Петров' },
       ],
       slideActive: 0,
     };
@@ -96,7 +104,6 @@ export default {
       return { 'buy__slider-pagination-dot--active': idx === this.slideActive }
     },
     getCardType(card) {
-      console.log(card);
       let re = /^4/;
       if (card.number.match(re) != null) return 'visa';
 
@@ -254,8 +261,12 @@ export default {
     }
 
     &-pagination {
+      width: 100%;
       display: flex;
-      padding: 16px 0;
+      justify-content: center;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 16px;
 
       &-dot {
         width: 12px;
@@ -263,6 +274,7 @@ export default {
         border-radius: 50%;
         border: 1px solid #dadada;
         transition: transform 0.3s ease;
+        flex-shrink: 0;
 
         & + & {
           margin-left: 18px;

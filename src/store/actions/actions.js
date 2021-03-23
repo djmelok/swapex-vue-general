@@ -23,7 +23,7 @@ export default {
         await Vue.http.post('https://swapex.me/api/testuser', { withCredentials: true })
             .then(response => {
                 commit('UPDATE_COINS', response.data);
-                console.log(response.data);
+                console.log(response.data)
             }, error => {
                 console.error(error)
             });

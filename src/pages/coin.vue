@@ -23,7 +23,7 @@
     a.coin__links-link(href="/")
       img.coin__links-link-icon(src="../assets/images/icons/arrow_line_up_right_light.png")
       span.coin__links-link-text Отправить
-  ul.class
+  ul.class(v-if="getCoin")
     li.class(v-for="act in getCoin.acts")
       span {{ act.recipient }}
 </template>
@@ -70,7 +70,7 @@ export default {
   },
   created() {
     this.API_GET_DATA();
-  }
+  },
 };
 </script>
 
