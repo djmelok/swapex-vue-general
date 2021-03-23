@@ -11,7 +11,7 @@ export default {
   props: {
     name: {
       type: String,
-      required: true
+      default: 'checkbox'
     },
     checked: {
       type: Boolean,

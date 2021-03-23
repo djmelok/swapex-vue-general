@@ -1,9 +1,10 @@
 <template lang="pug">
 .base-select(:class="getClassOpened", :tabindex="0", @blur="isOpened = false")
-  .base-select__selected(@click="isOpened = !isOpened")
+  .base-select__selected(@click="onSelect")
     img.icon(:src="getOptionIcon(selected)", alt="icon")
     .base-select__selected-text {{ selected }}
-    i.base-select__selected-arrow.fas.fa-angle-down
+    i.base-select__selected-arrow.fas.fa-angle-down(v-if="options.length > 1")
+    input(:name="name", type="hidden", :value="selected")
   .base-select__items
     .base-select__items-option(v-for="(option, idx) in getFilterOptions()", :key="idx", @click="selectOption(option)")
       img.icon(:src="getOptionIcon(option)", alt="icon")
@@ -13,10 +14,14 @@
 <script>
 export default {
   props: {
+    name: {
+      type: String,
+      required: true
+    },
     options: {
       type: Array,
       required: true
-    }
+    },
   },
   data() {
     return {
@@ -29,14 +34,14 @@ export default {
       return { 'base-select--opened': this.isOpened }
     }
   },
-  mounted() {
-    this.$emit('input', this.selected)
-  },
   methods: {
+    onSelect() {
+      if (this.options.length <= 1) return;
+      this.isOpened = !this.isOpened;
+    },
     selectOption(option) {
-      this.selected = option
-      this.isOpened = false
-      this.$emit('input', option)
+      this.selected = option;
+      this.isOpened = false;
     },
     getOptionIcon(option) {
       return `/img/crypto/svg/white/${option.toLowerCase()}.svg`

@@ -6,18 +6,16 @@
     a(href="/erms") условиями пользованиями&nbsp;
     | и&nbsp;
     a(href="/policy") политикой конфиденциальности
-  .login__buttons
-    a.login__button.login__button--signin(:class="getClassName", href="/user/singnin")
+  .login__buttons(:class="getClassName")
+    a.login__button.login__button--signin(href="/user/singnin")
       i.fas.fa-sign-in-alt
       span Войти
-    a.login__button.login__button--google(:class="getClassName", href="/auth/google")
+    a.login__button.login__button--google(href="/auth/google")
       i.fab.fa-google
     //- ButtonTelegram
-    a.login__button.login__button--telegram.login__button--disabled(:class="getClassName", href="/auth/telegram")
+    a.login__button.login__button--telegram(href="/auth/telegram")
       i.fab.fa-telegram-plane
-    a.login__button.login__button--signup(:class="getClassName", href="/user/registration")
-      i.fas.fa-sign-up-alt
-      span Зарегистрироваться
+    a.login__link(href="/user/registration") Зарегистрироваться
 </template>
 
 <script>
@@ -37,7 +35,7 @@ export default {
   computed: {
     getClassName() {
       return {
-        'login__button--disagree': !this.checkbox
+        'login__buttons--disagree': !this.checkbox
       };
     }
   },
@@ -84,6 +82,19 @@ export default {
     grid-template-columns: auto 60px 60px;
     grid-template-rows: auto auto;
     margin-top: 12px;
+
+    &--disagree {
+      .login__button {
+        pointer-events: none;
+        background-color: #7b7b7b;
+        color: #fff;
+      }
+
+      .login__link {
+        pointer-events: none;
+        color: #7b7b7b;
+      }
+    }
   }
 
   &__button {
@@ -94,30 +105,15 @@ export default {
     align-items: center;
     border-radius: 6px;
     padding: 12px;
-    transition: background-color 0.3s ease, opacity 0.3s ease, color 0.3s ease;
 
-    &--disabled,
-    &--disagree {
-      pointer-events: none;
-    }
-
-    &--signin,
-    &--signup {
+    &--signin {
       width: 100%;
       background-color: #ff6800;
       color: #fff;
-    }
 
-    &--signip {
       i {
         margin-left: -14px;
       }
-    }
-
-    &--signup {
-      grid-column-start: 1;
-      grid-column-end: 4;
-      margin-top: 12px;
     }
 
     &--google {
@@ -132,17 +128,22 @@ export default {
       color: #fff;
     }
 
-    &--disagree,
-    &--disabled {
-      background-color: #ccc;
-      color: #fff;
-    }
-
     span {
       text-transform: uppercase;
       font-weight: 500;
       margin-left: 8px;
     }
+  }
+
+  &__link {
+    padding: 12px;
+    margin-top: 12px;
+    grid-column-start: 1;
+    grid-column-end: 4;
+    text-transform: uppercase;
+    text-align: center;
+    font-weight: 500;
+    color: #ff6800;
   }
 }
 </style>

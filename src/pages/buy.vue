@@ -7,14 +7,14 @@
         img.buy__form-operation-title-img(src="../assets/images/icons/arrow_line_up_right_light.png")
         span.buy__form-operation-title-text Отдать
       input.buy__form-operation-input(
-        v-model.cardNumber="inputTransfer",
-        name='summOut',
+        :value="inputTransfer",
+        @input="onInputTransfer",
+        name="summOut",
         inputmode="decimal",
         type="number",
-        value="",
         placeholder="0.00"
       )
-      BaseSelect.buy__form-operation-select(:options="selectTransfer", @input="selectHandler")
+      BaseSelect.buy__form-operation-select(name="selectTransfer", :options="selectTransfer", @input="selectHandler")
     .buy__form-payment
       button.buy__form-payment-choice(type="button")
         img(src="../assets/images/icons/visa-master-dark.png")
@@ -26,15 +26,15 @@
         img.buy__form-operation-title-img(src="../assets/images/icons/arrow_line_down_left_light.png")
         span.buy__form-operation-title-text Получить
       input.buy__form-operation-input(
-        v-model.cardNumber="inputReceive",
+        :value="inputReceive",
+        @input="onInputReceive",
         name="summIn",
         inputmode="decimal",
         type="number",
         value="",
         placeholder="0.00"
       )
-      BaseSelect.buy__form-operation-select(:options="selectReceive", @input="selectHandler")
-    input(:value="cardActive", name="card", type="hidden", readonly)
+      BaseSelect.buy__form-operation-select(name="selectReceive", :options="selectReceive", @input="selectHandler")
     //- .buy__form-balance
     //-   span.buy__form-balance-text Баланс:
     //-   span.buy__form-balance-value 0 BTC
@@ -43,83 +43,71 @@
     //-   button.buy__form-range-button(type="button") 50%
     //-   button.buy__form-range-button(type="button") Max
     BaseSubmit(title="Далее")
-  .buy__slider
-    .buy__slider-inner(:style="{ '--X': this.slideActive * -1 }")
-      .buy__card(v-for="card in saveCards", v-touch:swipe="swipeHandler")
-        .buy__card-number
-          span.buy__card-number-text {{ card.cardNumber }}
-        .buy__card-name
-          span.buy__card-name-text {{ card.cardName }}
-        img.buy__card-type(:src="require(`../assets/images/credit-form/types/${getCardType(card)}.png`)", v-if="getCardType(card)", alt="type")
-      form.buy__bind(action="/addCard/create", method="post")(v-touch:swipe="swipeHandler")
-        input.buy__bind-input(type="text", placeholder="Наименование карты", name="cardName")
-        button.buy__bind-button(type="sumbit")
-          i.fas.fa-plus.buy__bind-button-icon
-          span.buy__bind-button-text Добавить карту
-    .buy__slider-pagination(v-if="slideCount >= 2")
-      button.buy__slider-pagination-dot(v-for="(_, idx) in slideCount", @click="clickPagination(idx)", :class="getClassActive(idx)", type="button")
+  BaseSlider(slideName="card", :slideCount="saveCards.length + 1", @slideActive="getSlideActive")
+    .buy__card(v-for="card in saveCards")
+      .buy__card-number
+        span.buy__card-number-text {{ card.cardNumber }}
+      .buy__card-name
+        span.buy__card-name-text {{ card.cardName }}
+      img.buy__card-type(:src="require(`../assets/images/credit-form/types/${getCardType(card)}.png`)", v-if="getCardType(card)", alt="type")
+    form.buy__bind(action="/addCard/create", method="post")
+      input.buy__bind-input(type="text", placeholder="Наименование карты", name="cardName")
+      button.buy__bind-button(type="sumbit")
+        i.fas.fa-plus.buy__bind-button-icon
+        span.buy__bind-button-text Добавить карту
+  input(name="card", ref="inputActiveCard", type="hidden")
 </template>
 
 <script>
 import ProgressStep from '../components/ProgressStep.vue';
+import BaseSlider from '../components/BaseSlider.vue';
 import BaseSelect from '../components/BaseSelect.vue';
 import BaseSubmit from '../components/BaseSubmit.vue';
-import Vue from "vue";
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   components: {
     ProgressStep,
+    BaseSlider,
     BaseSelect,
     BaseSubmit
   },
   data() {
     return {
-      selectTransfer: ['EUR', 'USD', 'UAH'],
-      selectReceive: ['BTC', 'ETH', 'LTC'],
+      // selectTransfer: ['UAH', 'EUR', 'USD'],
+      selectTransfer: ['UAH'],
+      selectReceive: ['SWX'],
       inputTransfer: null,
       inputReceive: null,
       saveCards: [
-        { cardNumber: '4441 **** 9634', cardName: 'Александр Петров' },
-        { cardNumber: '5566 **** 9634', cardName: 'Александр Петров' },
+        { cardNumber: '4444 **** 0010', cardName: 'Александр Петров' },
+        { cardNumber: '5566 **** 0010', cardName: 'Олег Иванов' },
       ],
-      slideActive: 0,
       curse: 0
     };
   },
-  beforeCreate() {
-    Vue.http.post('/pay', { withCredentials: true })
-      .then(response => {
-        this.saveCards = response.data.saveCards;
-        this.curse = response.data.curse;
-        console.log(response.data)
-      }, error => {
-        console.error(error)
-      });
-  },
   computed: {
-    slideCount() {
-      return this.saveCards.length + 1;
-    },
-    cardActive() {
-      if (this.slideActive >= this.saveCards.length) return null;
-      return this.saveCards[this.slideActive].cardNumber;
-    },
+    ...mapGetters(['GET_COURSE']),
   },
   methods: {
+    ...mapActions(['API_GET_DATA']),
+    onInputTransfer({ target }) {
+      const number = Number(target.value);
+      this.inputTransfer = number;
+      this.inputReceive = (number / this.GET_COURSE).toFixed(2);
+    },
+    onInputReceive({ target }) {
+      const number = Number(target.value);
+      this.inputReceive = number;
+      this.inputTransfer = (number * this.GET_COURSE).toFixed(2);
+    },
     selectHandler(e) {
       console.log('Select: ', e);
     },
-    swipeHandler(e) {
-      if (e === 'left') {
-        if (this.slideActive >= this.slideCount - 1) return;
-        this.slideActive = this.slideActive + 1;
-      } else if (e === 'right') {
-        if (this.slideActive <= 0) return;
-        this.slideActive = this.slideActive - 1;
-      }
-    },
-    getClassActive(idx) {
-      return { 'buy__slider-pagination-dot--active': idx === this.slideActive }
+    getSlideActive(e = 0) {
+      if (e < this.saveCards.length) {
+        this.$refs.inputActiveCard.value = this.saveCards[e].cardNumber;
+      } else this.$refs.inputActiveCard.value = '';
     },
     getCardType(card) {
       let re = /^4/;
@@ -142,9 +130,32 @@ export default {
 
       return 'none';
     },
-    clickPagination(idx) {
-      this.slideActive = idx;
+  },
+  watch: {
+    inputTransfer(value) {
+      const min = (this.GET_COURSE / 100).toFixed(2);
+      if (Number(value) < min) this.inputTransfer = min;
+    },
+    inputReceive(value) {
+      const min = 0.01;
+      if (Number(value) < min) this.inputReceive = min;
     }
+  },
+  created() {
+    this.API_GET_DATA();
+    this.$http.post('/pay', { withCredentials: true })
+      .then(response => {
+        this.saveCards = response.data.saveCards;
+        this.saveCards.forEach((card) => {
+          const number = card.cardNumber;
+          const length = card.cardNumber.length;
+          card.cardNumber = `${number.slice(0, 4)} **** ${number.slice(length - 4, length)}`;
+        });
+
+        this.curse = response.data.curse;
+      }, error => {
+        console.error(error)
+      });
   },
 };
 </script>
@@ -261,42 +272,6 @@ export default {
         border-radius: 12px;
         font-size: 18px;
         font-weight: bold;
-      }
-    }
-  }
-
-  &__slider {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
-
-    &-inner {
-      width: 100%;
-      display: flex;
-      transform: translateX(calc(var(--X) * 100%));
-      transition: transform 0.3s ease;
-    }
-
-    &-pagination {
-      display: flex;
-      padding: 16px 0;
-
-      &-dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        border: 1px solid #dadada;
-        transition: transform 0.3s ease;
-
-        & + & {
-          margin-left: 18px;
-        }
-
-        &--active {
-          transform: scale(1.5);
-          background-color: #dadada;
-        }
       }
     }
   }
