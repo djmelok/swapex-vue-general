@@ -15,9 +15,14 @@ export default {
     SHOW_DATA(state) {
         state.isShowData = true;
     },
+    REMOVE_COIN(state, item) {
+        state.coins = state.coins.filter(i => i !== item);
+    },
     UPDATE_COINS(state, _value) {
         const value = Object.values(_value).filter(item => typeof item === 'object');
         value.forEach((item, idx) => {
+            if (!item.active) return;
+
             Vue.set(state.coins, idx, {
                 id: idx,
                 logo: item.ico,
@@ -27,10 +32,7 @@ export default {
                 fullAmount: 0,
                 rate: 121.0,
                 ratePercent: 23.0,
-                active: item.active,
-                acts: item.acts,
-                key: item.key,
-                multykeys: item.multykeys,
+                active: item.active
             });
             //     {
             //         id: 0,
