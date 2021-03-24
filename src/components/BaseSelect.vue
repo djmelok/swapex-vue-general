@@ -44,7 +44,7 @@ export default {
       this.isOpened = false;
     },
     getOptionIcon(option) {
-      return `/img/crypto/svg/white/${option.toLowerCase()}.svg`
+      return `/img/crypto/png/white/${option.toLowerCase()}.png`
     },
     getFilterOptions() {
       return this.options.filter(item => item !== this.selected)

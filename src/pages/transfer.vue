@@ -1,7 +1,7 @@
 <template lang="pug">
 .transfer
   HeadPage(title="Перевод")
-  .transfer__title
+  .transfer__title(v-if="getCoin")
     img.transfer__title-icon(:src="`/img/crypto/png/${getCoin.logo}`")
     .transfer__title-name {{ getCoin.fullName }}
     .transfer__title-balance {{ (getCoin.amount / 100).toFixed(2) }} {{ getCoin.name }}
@@ -71,7 +71,6 @@ export default {
   computed: {
     ...mapGetters(['GET_COINS', 'GET_COURSE']),
     getCoin() {
-      console.log(this.GET_COINS.filter(coin => coin.name === 'SWX')[0]);
       return this.GET_COINS.filter(coin => coin.name === 'SWX')[0];
     },
     getUSD() {

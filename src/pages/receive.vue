@@ -1,54 +1,75 @@
 <template lang="pug">
 .receive
   HeadPage(title="Получить")
-  .receive__title
-    img.receive__title-icon(src="/img/crypto/png/btc.png")
-    .receive__title-name Bitcoin
-    .receive__title-balance 0 BTC
+  .receive__title(v-if="getCoin")
+    img.receive__title-icon(:src="`/img/crypto/png/${getCoin.logo}`")
+    .receive__title-name {{ getCoin.fullName }}
+    .receive__title-balance {{ (getCoin.amount / 100).toFixed(2) }} {{ getCoin.name }}
   .receive__switch(:style="{ '--X': Number(switchPage) }")
     button.receive__switch-button(type="button", @click="switchPage = false", :class="{ 'receive__switch-button--active': !this.switchPage }") Обычный
     button.receive__switch-button(type="button", @click="switchPage = true", :class="{ 'receive__switch-button--active': this.switchPage }") Одноразовый
     .receive__switch-line
-  .receive__slider(v-if="!switchPage")
-    vue-qrcode.receive__slider-qr(:value="`https://www.swapex.me/?code=${normalKey}`", :options="{ width: 200 }")
-    button.receive__slider-field(@click="clickCopy(normalKey)", type="button")
-      span.receive__slider-field-code {{ normalKey }}
-      i.far.fa-copy.receive__slider-field-icon
-  .receive__slider(v-if="switchPage")
-    .receive__slider-inner
-      .receive__slider-slide(v-if="getCoin", v-for="obj in getCoin.multykeys")
-        vue-qrcode.receive__slider-qr(:value="`https://www.swapex.me/?code=${obj.key}`", :options="{ width: 200 }")
-        .receive__slider-info
-          span.receive__slider-info-text {{ obj.keyname }}
-          span.receive__slider-info-text {{ obj.summ }}
-        button.receive__slider-field(@click="clickCopy(obj.key)", type="button")
-          span.receive__slider-field-code {{ obj.key }}
-          i.far.fa-copy.receive__slider-field-icon
-    form.receive__slider-form
-      input.receive__slider-form-input(name="name", type="text", placeholder="Имя ключа")
-      input.receive__slider-form-input(name="amount", type="text", placeholder="Сумма")
-      button.receive__slider-form-button(type="submit") Создать ключ
-        i.receive__slider-form-button-icon.fas.fa-plus
+  .receive__content(v-if="!switchPage && getCoin")
+    vue-qrcode.receive__content-qr(:value="`https://www.swapex.me/?code=${getCoin.key}`", :options="{ width: 200 }")
+    button.receive__content-field(@click="clickCopy(getCoin.key)", type="button")
+      span.receive__content-field-code {{ getCoin.key }}
+      i.far.fa-copy.receive__content-field-icon
+  //- template(v-if="switchPage && getCoin")
+    //- BaseSlider(:slideCount="getCoin.multykeys.length")
+    //-   .receive__content(v-for="obj in getCoin.multykeys")
+  template(v-if="switchPage")
+    BaseSlider(:slideCount="multykeys.length", ref="slider")
+      .receive__content(v-if="multykeys.length", v-for="obj in multykeys", :class="getClassLoading(obj.key)")
+        vue-qrcode.receive__content-qr(:value="`https://www.swapex.me/?code=${obj.key}`", :options="{ width: 200 }")
+        .receive__content-cap
+          i.receive__content-cap-icon.fas.fa-user-secret
+          .receive__content-cap-loadbar
+            .receive__content-cap-loadbar-logo
+        .receive__content-info
+          span.receive__content-info-text {{ obj.keyname }}
+          span.receive__content-info-text {{ obj.summ }}
+            i &#8372;
+        button.receive__content-field(@click="clickCopy(obj.key)", type="button")
+          span.receive__content-field-code {{ obj.key }}
+          i.far.fa-copy.receive__content-field-icon
+      //- .receive__content.receive__content--empty(v-if="!getCoin")
+      .receive__content.receive__content--empty(v-if="!multykeys.length")
+        .receive__content-cap
+          i.receive__content-cap-icon.fas.fa-user-secret
+        .receive__content-field
+          span.receive__content-field-code Для создания одноразового ключа введите имя и сумму в форму ниже.
+    form#generate.receive__form(@submit="onSubmit", method="post", action="/cointSWXCreateKey")
+      input.receive__form-input(v-model.trim="inputKey", name="keyname", type="text", placeholder="Имя ключа", required)
+      input.receive__form-input(v-model.trim="inputCount", name="coint", type="number", inputmode="decimal", placeholder="Сумма", required)
+      button.receive__form-button(type="submit") Создать ключ
+        i.receive__form-button-icon.fas.fa-plus
 </template>
 
 <script>
 import HeadPage from '../components/HeadPage.vue';
+import BaseSlider from '../components/BaseSlider.vue';
 import VueQrcode from '@chenfengyuan/vue-qrcode';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   components: {
     HeadPage,
+    BaseSlider,
     VueQrcode,
   },
   data() {
     return {
+      inputKey: '',
+      inputCount: '',
+      multykeys: [],
       switchPage: false,
-      normalKey: 'O7K5lgl0wXU4U7Wf89r3r48fBM6fIhpnEgoakcbfBy6kQ8evqJGxUbGBsXa5MQ2uiSbKSi0bs9N0ba1FJMA3dJJVKtF817v',
     };
   },
   methods: {
     ...mapActions(['API_GET_DATA']),
+    getClassLoading(key) {
+      return { 'receive__content--loading': key === 'loading' }
+    },
     clickCopy(key) {
       const input = document.createElement('input');
       input.setAttribute('value', key);
@@ -62,17 +83,44 @@ export default {
         position: 'bottom'
       });
     },
+    onSubmit(e) {
+      e.preventDefault();
+      if (this.multykeys[0]?.key === 'loading') return;
+
+      this.multykeys.unshift({
+        key: "loading",
+        keyname: '-',
+        summ: '-',
+      });
+
+      const inputKey = this.inputKey;
+      const inputCount = this.inputCount;
+      this.inputKey = '';
+      this.inputCount = '';
+
+      if (this.multykeys.length > 1 && this.$refs.slider.getSlideActive() === 0) {
+        this.$refs.slider.setSlideActive(1, false);
+      }
+
+      setTimeout(() => this.$refs.slider.setSlideActive(0), 50);
+      setTimeout(() => {
+        this.$set(this.multykeys, 0, {
+          key: "R7A5cCN1o13TdVWL1EKZ5KKxlBWTXS8ZrMSavuHSQC0k8mEq4AdbQ6AG6rsI",
+          keyname: inputKey,
+          summ: inputCount,
+        });
+      }, 3000);
+    },
   },
   computed: {
     ...mapGetters(['GET_COINS']),
     getCoin() {
-      console.log(this.GET_COINS.filter(coin => coin.name === 'SWX')[0]);
       return this.GET_COINS.filter(coin => coin.name === 'SWX')[0];
     },
   },
   created() {
     this.API_GET_DATA();
-  }
+  },
 };
 </script>
 
@@ -141,25 +189,108 @@ export default {
     }
   }
 
-  &__slider {
-    width: 100%;
-    overflow: hidden;
-    padding: 16px;
+  &__content {
+    $content: &;
 
-    &-inner {
-      display: flex;
+    width: 100%;
+    height: 316px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+
+    &--loading,
+    &--empty {
+      #{$content}-qr {
+        display: none;
+      }
+
+      #{$content}-cap {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #fff;
+        position: relative;
+        margin-bottom: 8px;
+
+        &::before {
+          content: "";
+          width: 170px;
+          height: 170px;
+          border: 3px solid #000;
+          transform: translate(-50%, -50%);
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          z-index: 0;
+        }
+
+        &-icon {
+          font-size: 132px;
+          color: #000;
+        }
+      }
+
+      #{$content}-field {
+        pointer-events: none;
+      }
+
+      #{$content}-info-text i,
+      #{$content}-field-icon {
+        display: none;
+      }
     }
 
-    &-slide {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex-shrink: 0;
+    &--loading {
+      #{$content}-cap {
+        &-loadbar {
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.75);
+          position: absolute;
+          z-index: 1;
+
+          &-logo {
+            width: 100%;
+            height: 100%;
+            background-image: url("../assets/images/logo.png");
+            background-size: 35%;
+            background-repeat: no-repeat;
+            background-position: 50%;
+            position: absolute;
+            animation: rotate 1s ease infinite;
+
+            @keyframes rotate {
+              to {
+                transform: rotate(360deg);
+              }
+            }
+          }
+        }
+      }
+
+      #{$content}-field-code {
+        &::after {
+          content: "...";
+        }
+      }
+    }
+
+    &--empty {
+      #{$content}-field-code {
+        word-break: break-word;
+      }
     }
 
     &-qr {
       margin-bottom: 8px;
+    }
+
+    &-cap {
+      display: none;
     }
 
     &-info {
@@ -176,24 +307,26 @@ export default {
         & + & {
           border-left: 2px solid #ff6800;
           text-align: left;
+        }
 
-          &::after {
-            content: "\20B4";
-            margin-left: 4px;
-          }
+        i {
+          margin-left: 4px;
         }
       }
     }
 
     &-field {
+      width: 100%;
       display: flex;
+      justify-content: center;
       align-items: center;
-      margin-bottom: 16px;
       margin-top: 8px;
 
       &-code {
         overflow-wrap: anywhere;
+        word-break: break-all;
         font-weight: 500;
+        text-align: center;
         color: #b8b8b8;
       }
 
@@ -203,34 +336,35 @@ export default {
         font-size: 18px;
       }
     }
+  }
 
-    &-form {
-      display: grid;
-      grid-template-columns: auto auto;
-      grid-template-rows: auto auto;
+  &__form {
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
 
-      &-input {
-        width: 100%;
-        padding: 24px 12px;
-        background-color: transparent;
-        border: none;
-        outline: none;
-        color: #dadada;
-      }
+    &-input {
+      width: 100%;
+      padding: 24px 12px;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      color: #dadada;
+    }
 
-      &-button {
-        display: flex;
-        grid-column-start: 1;
-        grid-column-end: 3;
-        justify-content: space-between;
-        align-items: center;
-        background-color: #f8880f;
-        border-radius: 8px;
-        padding: 12px;
-        font-size: 18px;
-        font-weight: 500;
-        color: #fff;
-      }
+    &-button {
+      display: flex;
+      grid-column-start: 1;
+      grid-column-end: 3;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f8880f;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 18px;
+      font-weight: 500;
+      color: #fff;
     }
   }
 }

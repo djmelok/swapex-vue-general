@@ -12,6 +12,7 @@
         name="summOut",
         inputmode="decimal",
         type="number",
+        step="any",
         placeholder="0.00"
       )
       BaseSelect.buy__form-operation-select(name="selectTransfer", :options="selectTransfer", @input="selectHandler")
@@ -31,6 +32,8 @@
         name="summIn",
         inputmode="decimal",
         type="number",
+        step="any",
+        min="0.01",
         value="",
         placeholder="0.00"
       )
@@ -43,7 +46,7 @@
     //-   button.buy__form-range-button(type="button") 50%
     //-   button.buy__form-range-button(type="button") Max
     BaseSubmit(title="Далее")
-  BaseSlider(slideName="card", :slideCount="saveCards.length + 1", @slideActive="getSlideActive")
+  BaseSlider(slideName="card", :slideCount="saveCards.length + 1", @getSlideActive="getSlideActive")
     .buy__card(v-for="card in saveCards")
       .buy__card-number
         span.buy__card-number-text {{ card.cardNumber }}

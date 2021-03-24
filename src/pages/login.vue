@@ -47,7 +47,6 @@ export default {
   },
   methods: {
     changeCheckbox(e) {
-      console.log('changeCheckbox', e);
       this.checkbox = e;
     },
     resizeHandler() {

@@ -44,7 +44,6 @@ export default {
   computed: {
     ...mapGetters(['GET_COINS']),
     getCoin() {
-      console.log(this.GET_COINS.filter(coin => coin.name === 'SWX')[0]);
       return this.GET_COINS.filter(coin => coin.name === 'SWX')[0];
     },
     shortCode() {

@@ -32,6 +32,17 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+input{
+  font-size: 16px; // 16px и больше для отключения zoom ios
+}
+
+input,
+input:focus,
+input:active{
+  outline: none;
+  border: none;
+}
+
 body{
   font-size: 18px;
   overflow-x: hidden;
