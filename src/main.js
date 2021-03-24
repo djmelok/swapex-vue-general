@@ -13,10 +13,10 @@ import store from './store/index.js';
 // import App from './pages/index.vue';
 // import App from './pages/change-pin.vue';
 // import App from './pages/coin.vue';
-// import App from './pages/transfer.vue';
+import App from './pages/transfer.vue';
 // import App from './pages/receive.vue';
 
-import App from './pages/buy.vue';
+// import App from './pages/buy.vue';
 // import App from './pages/provider.vue';
 // import App from './pages/pre-check.vue';
 

@@ -5,7 +5,7 @@
     img.transfer__title-icon(:src="`/img/crypto/png/${getCoin.logo}`")
     .transfer__title-name {{ getCoin.fullName }}
     .transfer__title-balance {{ (getCoin.amount / 100).toFixed(2) }} {{ getCoin.name }}
-  form.transfer__form
+  form.transfer__form(v-if="getCoin")
     .transfer__form-course
       .transfer__form-course-currency
         span {{ getUSD }}
@@ -22,8 +22,13 @@
       .transfer__form-range-dash.transfer__form-range-dash--right 
         span.transfer__form-range-dash-text max
       input.transfer__form-range-input(v-model="inputRange", type="range", step="0.01", min="0", :max="getCoin.amount")
-    .transfer__form-often
-      button.transfer__form-often-button(v-for="item in oftenUsed", :class="getDisabledClass(item)", @click="clickOftenButton(item)", type="button") {{ (item / 100).toFixed(2) }}
+    .transfer__form-often(v-if="getCoin")
+      button.transfer__form-often-button(
+        v-for="item in getCoin.standard",
+        :class="getDisabledClass(item.value)",
+        @click="clickOftenButton(item.value)",
+        type="button"
+      ) {{ (item.value / 100).toFixed(2) }}
     .transfer__form-address
       input.transfer__form-address-input(type="text", placeholder="Адрес получателя", ref="address")
       button.transfer__form-address-button(type="button", @click="clickPaste")
@@ -46,19 +51,18 @@ export default {
   },
   data() {
     return {
-      oftenUsed: [5000, 10000, 20000, 50000, 100000, 300000, 500000, 1000000],
       inputRange: 0,
     };
   },
   methods: {
     ...mapActions(['API_GET_DATA']),
-    getDisabledClass(item) {
+    getDisabledClass(num) {
       return {
-        'transfer__form-often-button--disabled': item > this.getCoin.amount,
+        'transfer__form-often-button--disabled': num > this.getCoin.amount,
       }
     },
-    clickOftenButton(item) {
-      this.inputRange = item;
+    clickOftenButton(num) {
+      this.inputRange = num;
     },
     clickPaste() {
       if (!navigator.clipboard) return;
@@ -71,6 +75,7 @@ export default {
   computed: {
     ...mapGetters(['GET_COINS', 'GET_COURSE']),
     getCoin() {
+      console.log(this.GET_COINS.filter(coin => coin.name === 'SWX')[0]);
       return this.GET_COINS.filter(coin => coin.name === 'SWX')[0];
     },
     getUSD() {

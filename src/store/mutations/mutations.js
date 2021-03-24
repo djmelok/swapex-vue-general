@@ -35,6 +35,7 @@ export default {
                 key: item.key,
                 multykeys: item.multykeys,
                 acts: item.acts,
+                standard: item.standard,
                 active: item.active
             });
         });
